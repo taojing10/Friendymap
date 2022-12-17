@@ -41,7 +41,7 @@ Congratulations, you have successfully set up and run a React project!
 
 
 # Integrate with Google Map API
-There are **two steps** to set up integration with google :
+There are **two steps** to set up integration with google map:
 
 1. Install all dependencies
 2. Set up local environment with API key
@@ -53,11 +53,11 @@ Run `npm install`to install all dependencies -- this will create a node_modules 
 
 ## Set up local environment with API key
 1. create a file called `.env` under root folder (FRONTEND folder)
-2. In the `.env` file add this line (*note: Replace `API key` with your own API key or Ask @sharon to share her key to you*)
+2. In the `.env` file, add the below line (*note: Replace `API key` with your own API key or Ask @sharon to share her key to you*)
 
 	`REACT_APP_GOOGLE_MAPS_API_KEY=*API Key*`
 	
-	If you want to get your own API key plear refer to [this link](https://developers.google.com/maps/documentation/javascript/get-api-key)
+	If you want to get your own API key please refer to [this link](https://developers.google.com/maps/documentation/javascript/get-api-key)
 
 ## Run the Application
 In your terminal, run `npm start`
