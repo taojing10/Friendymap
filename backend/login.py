@@ -11,8 +11,8 @@ client = boto3.client("secretsmanager")
 # retrieve secret value
 def get_secret():
 
-    secret_name = "mongodb_test"
-    region_name = "us-west-2"
+    secret_name = "MongoDB_connection"
+    region_name = "us-east-1"
 
     # create a secret manager client
     client = boto3.client('secretsmanager')
