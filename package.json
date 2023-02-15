@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.271.0"
+  },
+  "devDependencies": {
+    "@craco/craco": "^7.0.0"
+  }
+}
