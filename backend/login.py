@@ -27,7 +27,7 @@ def get_secret():
     # Decrypts secret using the associated KMS key.
     secret = get_secret_value_response['SecretString']
 
-app.config["MONGO_URI"] = "mongodb://localhost:*****/database_name"
+app.config["MONGO_URI"] = f"mongodb+srv://{secret_value[testuser]}:{secret_value[testpw]}@{secret_value[192.168.50.1]}/{secret_value[MongoDB]}?retryWrites=true&w=majority"
 mongo = PyMongo(app)
 
 @app.route("/")
