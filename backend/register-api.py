@@ -1,11 +1,39 @@
-from flask import Flask, render_template, request, url_for
-from pymongo import MongoClient
-
+from flask import Flask, render_template, request
+from botocore.exceptions import ClientError
+import boto3
+from dotenv import load_dotenv
+import os
 app = Flask(__name__)
 
-client = MongoClient("mongodb://localhost:27017/")
-db = client["database"]
-user = db["users"]
+load_dotenv()
+
+AWS_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY")
+AWS_SECRET_KEY = os.getenv("AWS_SECRET_KEY")
+
+def get_secret():
+
+    secret_name = "MongoDB_connection"
+    region_name = "us-east-1"
+
+    # Create a Secrets Manager client
+    session = boto3.session.Session()
+    client = session.client(
+        service_name='secretsmanager',
+        region_name=region_name
+    )
+
+    try:
+        get_secret_value_response = client.get_secret_value(
+            SecretId=secret_name
+        )
+    except ClientError as e:
+        # For a list of exceptions thrown, see
+        # https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
+        raise e
+
+    # Decrypts secret using the associated KMS key.
+    secret = get_secret_value_response['SecretString']
+
 
 @app.route('/register', methods=[ 'POST'])
 def register():
@@ -14,7 +42,7 @@ def register():
         username = request.form['username']
         password = request.form['password']
         email = request.form['email']
-        account = user.find_one({'username' : request.form['username']})
+        account = username.find_one({'username' : request.form['username']})
 
         if account:
             raise ValueError("Account already exists !")
