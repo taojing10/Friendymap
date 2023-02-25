@@ -1,50 +1,65 @@
-import boto3, json
+import boto3, json, os, connectdbpw
 from flask import *
-from flask_pymongo import PyMongo
+from flask_pymongo import PyMongo, MongoClient
 from botocore.exceptions import ClientError
 
 app = Flask(__name__)
-# connect to secret manager resource
-client = boto3.client("secretsmanager")
 
-# retrieve secret value
 def get_secret():
 
+    # Retrieve the Mongodb connection from AWS Secret Manager
     secret_name = "MongoDB_connection"
     region_name = "us-east-1"
 
-    # create a secret manager client
-    client = boto3.client('secretsmanager')
+    # Create a boto3 session and retrieve the secret value
+    session = boto3.session.Session(
+        aws_access_key_id=connectdbpw.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=connectdbpw.SECRET_ACCESS_KEY
+    )
+    client = session.client(
+        service_name='secretsmanager',
+        region_name=region_name
+    )
+    get_secret_value_response = client.get_secret_value(SecretId=secret_name)
 
-    try:
-        get_secret_value_response = client.get_secret_value(
-            SecretId=secret_name
-        )
-    except ClientError as e:
-        raise e
+    if 'SecretString' in get_secret_value_response:
+        secret = get_secret_value_response['SecretString']
+    else:
+        secret = json.loads(get_secret_value_response['SecretBinary'])
 
-    # Decrypts secret using the associated KMS key.
-    secret = get_secret_value_response['SecretString']
+    return json.loads(secret)
 
-app.config["MONGO_URI"] = f"mongodb+srv://{secret_value[testuser]}:{secret_value[testpw]}@{secret_value[192.168.50.1]}/{secret_value[MongoDB]}?retryWrites=true&w=majority"
-mongo = PyMongo(app)
+# Connect to the Mongodb using the MongoClient object
+secrets = get_secret()
+mongodb_uri = secrets['mongodb_uri']
+client = MongoClient(mongodb_uri)
+db = client['MongoDB_connection']
+users = db['users']
 
-#create a collection in Mongodb to store user information
-users_collection = mongo.db.users
+def validate_password(username, password):
 
-@app.route("/login", methods = ["POST"])
+    # Check if the given username exists in the database and if the password is correct.
+    # Return the user info if the username and password are correct, or None if not.
+
+    user = users.find_one({'username': username})
+    if not user:
+        return None
+    if user['password'] != password:
+        return None
+    return user
+
+@app.route('/login', methods=['POST'])
 def login():
-    #get user info from the form
-    username = request.form["username"]
-    password = request.form["password"]
+    # Get the username and password from the request body
+    username = request.json.get('username')
+    password = request.json.get('password')
 
-    #check if both username and password r correct
-    existing_user = users_collection.validate_password({"username": username, "password": password})
-    if not existing_user:
-        return ("Incorrect username or password")
+    # Check if the user exists in the database and validate the password
+    user = validate_password(username, password)
 
-    #store the user ID in the session to keep the user logged in
-    session["user"] = user
+    if not user:
+        return False
 
-    return ("login page")
+    # If the user and password are correct, return a success message
+    return True
 
