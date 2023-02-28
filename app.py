@@ -13,8 +13,8 @@ AWS_ACCESS_KEY = connectdbpw.AWS_ACCESS_KEY_ID
 AWS_SECRET_KEY = connectdbpw.SECRET_ACCESS_KEY
 
 #amazon secretmanager code
-secret_name = "MongoDB_connection"
-region_name = "us-east-1"
+Secret_Name = "MongoDB_connection"
+Region_Name = "us-east-1"
 
 # Create a Secrets Manager client
 session = boto3.session.Session()
@@ -30,31 +30,20 @@ secret_jason = get_secret_value_response['MongoDB_connection']
 
 secret = json.loads(secret_jason)
 
-CONNECTION_STRING = secret["MongoDB_connection"]
+connection_string = secret["MongoDB_connection"]
 
 try: 
-  client = pymongo.MongoClient(CONNECTION_STRING, tlsCAFile=certifi.where())
+  client = pymongo.MongoClient(connection_string, tlsCAFile=certifi.where())
 except Exception:
   print("error:"+Exception)
 
 myDb = client["Friendymap_db"]
 
 
-# def main():
-#   moongo_setup.global_init()
+def main():
+   moongo_setup.global_init()
 
 
-# def index():
-#     return render_template("login.html")
-
-# @app.route("/login", methods = ["POST"])
-# def login():
-
-# @app.route("/register", methods = ["POST","GET"])
-# def register():
-#     
-
-
-# if __name__ == '__main__': 
-#     app.run(debug=True) 
+if __name__ == '__main__': 
+     app.run(debug=True) 
    

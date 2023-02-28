@@ -1,12 +1,12 @@
 class User(mongoengine.Document):
-    ID = mongoengine.ObjectField
+    id = mongoengine.ObjectField
     username = mongoengine.StringField(required=True)
-    Password = mongoengine.StringField(required=True)
+    password = mongoengine.StringField(required=True)
     email = mongoengine.StringField(required=True)
-    If_willing_to_share_location = mongoengine.BooleanField()
+    if_willing_to_share_location = mongoengine.BooleanField()
     create_time = mongoengine.DateTimeField(default=datetime.datetime.now)
     lasttime_updated = mongoengine.DateTimeField(default=datetime.datetime.now)
-    Event = mongoengine.EmbededDocumentListField(Event)
+    event = mongoengine.EmbededDocumentListField(Event)
 
     meta = {
         'db_alias': 'core',
@@ -14,11 +14,11 @@ class User(mongoengine.Document):
     }
 
 class Event(mongoengine.Document):
-    ID = mongoengine.ObjectField
+    id = mongoengine.ObjectField
     event_name = mongoengine.StringField(required=True)
     event_start_Date = mongoengine.DateTimeField
     event_end_Date = mongoengine.DateTimeField
-    hostID = mongoengine.ObjectField
+    hostid = mongoengine.ObjectField
     country = mongoengine.StringField
     state = mongoengine.StringField
     city = mongoengine.StringField
