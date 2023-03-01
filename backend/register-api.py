@@ -1,8 +1,14 @@
-from flask import Flask, render_template, request
+from flask import Flask, request, url_for, render_template, redirect
 from botocore.exceptions import ClientError
+from wtforms import StringField, PasswordField, SubmitField
+from flask_wtf import FlaskForm
+from pymongo import MongoClient
+from wtforms.validators import input_required, length, ValidationError
 import boto3
 from dotenv import load_dotenv
 import os
+
+
 app = Flask(__name__)
 
 load_dotenv()
@@ -34,27 +40,42 @@ def get_secret():
     # Decrypts secret using the associated KMS key.
     secret = get_secret_value_response['SecretString']
 
+    return secret
+
+
+secrets = get_secret()
+mongodb_uri = secrets['mongodb_uri']
+client = MongoClient(mongodb_uri)
+db = client['database']
+users = db["users"]
+
+
+def validate_username(username):
+    user = users.find_one({'username': username})
+    if not user:
+        return not user
+
+#class RegisterForm(FlaskForm):
+    #username = StringField(validators=[input_required(), length(min=4, max=20)], render_kw={"placeholder": "Username"})
+    #password = PasswordField(validators=[input_required(), length(min=4, max=20)], render_kw={"placeholder": "Password"})
+    #submit = SubmitField("Register")
+
 
 @app.route('/register', methods=[ 'POST'])
 def register():
     form = RegisterForm()
-    if request.method == 'POST' and 'username' in request.form and 'password' in request.form and 'email' in request.form:
+    if form.validate_on_submit():
         username = request.form['username']
         password = request.form['password']
-        email = request.form['email']
-        account = username.find_one({'username' : request.form['username']})
+        user = users.find_one({'username' : request.form['username']})
 
-        if account:
+        if user:
             raise ValueError("Account already exists !")
-        elif not username:
-            raise NameError("Username is required.")
-        elif not password:
-            raise ValueError("Password is required.")
-        elif not email:
-            raise ValueError("Email is required.")
+        else:
+            user = {'username': username, 'password': password}
+            users.insert_one(user)
+            return redirect(url_for('success'))
 
-
-    return render_template('/', form=form)
 
 if __name__ == '__main__':
     app.run(debug=False)
