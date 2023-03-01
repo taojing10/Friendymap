@@ -18,7 +18,7 @@ To check the version installed, open a terminal window and entering the followin
 >**_python3 --version_**
 
 **Note**: _python3 download address [Python3 download](https://www.python.org/downloads/release/python-3111/).
-
+ 
 
 
 ## Configuring
