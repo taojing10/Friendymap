@@ -1,46 +1,46 @@
-import boto3, json, os, connectdbpw
-from flask import *
-from flask_pymongo import PyMongo, MongoClient
-from botocore.exceptions import ClientError
+import json
+from flask import Flask, request, jsonify
+from flask_pymongo import MongoClient
+import connectdbpw
+import boto3
+import certifi
 
-app = Flask(__name__)
+app = Flask('login')
 
-def get_secret():
+AWS_ACCESS_KEY = connectdbpw.AWS_ACCESS_KEY_ID
+AWS_SECRET_KEY = connectdbpw.SECRET_ACCESS_KEY
 
-    # Retrieve the Mongodb connection from AWS Secret Manager
-    secret_name = "MongoDB_connection"
-    region_name = "us-east-1"
+# retrieve the MongoDB connection from AWS Secrets Manager
+secret_name = "MongoDB_connection"
+region_name = "us-east-1"
 
-    # Create a boto3 session and retrieve the secret value
-    session = boto3.session.Session(
-        aws_access_key_id=connectdbpw.AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=connectdbpw.SECRET_ACCESS_KEY
-    )
-    client = session.client(
-        service_name='secretsmanager',
-        region_name=region_name
-    )
-    get_secret_value_response = client.get_secret_value(SecretId=secret_name)
+# create a boto3 session and retrieve the secret value
+session = boto3.session.Session()
+client = session.client(
+    service_name='secretsmanager',
+    region_name=region_name,
+    aws_access_key_id=AWS_ACCESS_KEY,
+    aws_secret_access_key=AWS_SECRET_KEY
+)
+get_secret_value_response = client.get_secret_value(SecretId=secret_name)
 
-    if 'SecretString' in get_secret_value_response:
-        secret = get_secret_value_response['SecretString']
-    else:
-        secret = json.loads(get_secret_value_response['SecretBinary'])
+if 'SecretString' in get_secret_value_response:
+    secret = get_secret_value_response['SecretString']
+else:
+    secret = json.loads(get_secret_value_response['SecretBinary'])
 
-    return json.loads(secret)
+secrets = json.loads(secret)
 
-# Connect to the Mongodb using the MongoClient object
-secrets = get_secret()
-mongodb_uri = secrets['mongodb_uri']
-client = MongoClient(mongodb_uri)
-db = client['MongoDB_connection']
-users = db['users']
+# set up the Mongodb connection
+connection_string = connectdbpw.CONNECTION_STRING
+#connection_string = secrets["MongoDB_connection"]
+client = MongoClient(connection_string, tlsCAFile=certifi.where())
+db = client['Friendymap_db']
+users = db['User']
 
 def validate_password(username, password):
-
     # Check if the given username exists in the database and if the password is correct.
     # Return the user info if the username and password are correct, or None if not.
-
     user = users.find_one({'username': username})
     if not user:
         return None
@@ -50,16 +50,15 @@ def validate_password(username, password):
 
 @app.route('/login', methods=['POST'])
 def login():
-    # Get the username and password from the request body
+    # get the username and password from the request body
     username = request.json.get('username')
     password = request.json.get('password')
 
-    # Check if the user exists in the database and validate the password
+    # check if the user exists in the database and validate the password
     user = validate_password(username, password)
 
     if not user:
-        return False
+        return jsonify({'success': False})
 
-    # If the user and password are correct, return a success message
-    return True
-
+    # if the user and password are correct, return a success message
+    return jsonify({'success': True})
