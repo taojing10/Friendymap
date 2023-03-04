@@ -32,3 +32,4 @@ class Event(mongoengine.Document):
         'db_alias': 'core',
         'collection': 'event'
     }
+test

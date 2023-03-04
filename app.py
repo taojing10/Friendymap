@@ -2,48 +2,51 @@ from flask import Flask,render_template
 import boto3
 from botocore.exceptions import ClientError
 import json
-import pymongo
+import pymongo 
+from flask_pymongo import MongoClient
 import certifi
 import data.mongo_setup as mongo_setup
 import connectdbpw
 
+
 app = Flask(__name__)
 
-AWS_ACCESS_KEY = connectdbpw.AWS_ACCESS_KEY_ID
-AWS_SECRET_KEY = connectdbpw.SECRET_ACCESS_KEY
+#use AWS secretmanager to access MongoDB database
+secret_name = "MongoDB_connection"
+region_name = "us-east-1"
 
-#amazon secretmanager code
-Secret_Name = "MongoDB_connection"
-Region_Name = "us-east-1"
+session = boto3.session.Session(
+  aws_access_key_id=connectdbpw.aws_access_key_id,
+  aws_secret_access_key=connectdbpw.aws_secret_access_key
+)
 
-# Create a Secrets Manager client
-session = boto3.session.Session()
 client = session.client(
     service_name='secretsmanager',
     region_name=region_name
-    )
-get_secret_value_response = client.get_secret_value(
-    SecretId=secret_name
-    )
+)
+try:
+  # call secret manager
+  get_secret_value_response = client.get_secret_value(SecretId=secret_name)
+except ClientError as error:
+  print(error)
+  
+secret = json.loads(get_secret_value_response['SecretString']) 
 
-secret_jason = get_secret_value_response['MongoDB_connection']
-
-secret = json.loads(secret_jason)
-
-connection_string = secret["MongoDB_connection"]
+connection_string = secret['connection_string']
 
 try: 
-  client = pymongo.MongoClient(connection_string, tlsCAFile=certifi.where())
-except Exception:
-  print("error:"+Exception)
-
-myDb = client["Friendymap_db"]
-
-
-def main():
-   moongo_setup.global_init()
+  # print("connection_string", connection_string)
+  # print(type(connection_string))
+  # print (connection_string == "mongodb+srv://testuser:testpw@cluster0.gv9cbee.mongodb.net/?retryWrites=true&w=majority")
+  client = MongoClient(connection_string, tlsCAFile=certifi.where())
+  print(client.list_database_names())
+except Exception as e: print(e)
 
 
-if __name__ == '__main__': 
-     app.run(debug=True) 
+
+# def main():
+#   mongo_setup.global_init()
+
+# if __name__ == '__main__': 
+#   app.run(debug=True) 
    
