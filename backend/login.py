@@ -4,17 +4,18 @@ from flask_pymongo import MongoClient
 import connectdbpw
 import boto3
 import certifi
+import mongo_setup
 
 app = Flask('login')
 
 AWS_ACCESS_KEY = connectdbpw.AWS_ACCESS_KEY_ID
 AWS_SECRET_KEY = connectdbpw.SECRET_ACCESS_KEY
 
-# retrieve the MongoDB connection from AWS Secrets Manager
+# Retrieve the MongoDB connection from AWS Secrets Manager
 secret_name = "MongoDB_connection"
 region_name = "us-east-1"
 
-# create a boto3 session and retrieve the secret value
+# Create a boto3 session and retrieve the secret value
 session = boto3.session.Session()
 client = session.client(
     service_name='secretsmanager',
@@ -31,9 +32,8 @@ else:
 
 secrets = json.loads(secret)
 
-# set up the Mongodb connection
-connection_string = connectdbpw.CONNECTION_STRING
-#connection_string = secrets["MongoDB_connection"]
+# Set up the MongoDB connection
+connection_string = secrets['connection_string']
 client = MongoClient(connection_string, tlsCAFile=certifi.where())
 db = client['Friendymap_db']
 users = db['User']
@@ -50,15 +50,15 @@ def validate_password(username, password):
 
 @app.route('/login', methods=['POST'])
 def login():
-    # get the username and password from the request body
+    # Get the username and password from the request body
     username = request.json.get('username')
     password = request.json.get('password')
 
-    # check if the user exists in the database and validate the password
+    # Check if the user exists in the database and validate the password
     user = validate_password(username, password)
 
     if not user:
         return jsonify({'success': False})
 
-    # if the user and password are correct, return a success message
+    # If the user and password are correct, return a success message
     return jsonify({'success': True})
