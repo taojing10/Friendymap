@@ -1,4 +1,4 @@
-class User(mongoengine.Document):
+class user(mongoengine.Document):
     id = mongoengine.ObjectField
     username = mongoengine.StringField(required=True)
     password = mongoengine.StringField(required=True)
@@ -13,7 +13,7 @@ class User(mongoengine.Document):
         'collection': 'user'
     }
 
-class Event(mongoengine.Document):
+class event(mongoengine.Document):
     id = mongoengine.ObjectField
     event_name = mongoengine.StringField(required=True)
     event_start_Date = mongoengine.DateTimeField
