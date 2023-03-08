@@ -5,9 +5,7 @@ import json
 import pymongo 
 from flask_pymongo import MongoClient
 import certifi
-import data.mongo_setup as mongo_setup
 import connectdbpw
-
 
 app = Flask(__name__)
 
@@ -35,18 +33,13 @@ secret = json.loads(get_secret_value_response['SecretString'])
 connection_string = secret['connection_string']
 
 try: 
-  # print("connection_string", connection_string)
-  # print(type(connection_string))
-  # print (connection_string == "mongodb+srv://testuser:testpw@cluster0.gv9cbee.mongodb.net/?retryWrites=true&w=majority")
   client = MongoClient(connection_string, tlsCAFile=certifi.where())
   print(client.list_database_names())
 except Exception as e: print(e)
 
 
 
-# def main():
-#   mongo_setup.global_init()
-
-# if __name__ == '__main__': 
-#   app.run(debug=True) 
+def main():
+  if __name__ == '__main__': 
+  app.run(debug=True) 
    
