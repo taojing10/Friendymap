@@ -3,7 +3,6 @@ from wtforms import StringField, PasswordField, SubmitField
 from flask_wtf import FlaskForm, CSRFProtect
 from wtforms.validators import Length
 import hashlib
-import db_connection
 import secrets
 from flask_wtf.csrf import generate_csrf
 
