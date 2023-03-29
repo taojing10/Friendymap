@@ -15,13 +15,25 @@ db = mongo_client.Friendymap_db
 users = db.user
 events = db.event
 
+# hash a given password using bcrypt
+def hash_password(password):
+    # generate a unique salt for each user
+    salt = bcrypt.gensalt()
+    # combine the password and salt, then hash it
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
+    return hashed_password
+
+# verify a given password against a stored hashed password
+def verify_password(password, hashed_password):
+    return bcrypt.checkpw(password.encode('utf-8'), hashed_password)
+
 def validate_password(username, password):
     # Check if the given username exists in the database and if the password is correct.
     # Return the user info if the username and password are correct, or None if not.
     user = users.find_one({'username': username})
     if not user:
         return None
-    if user['password'] != password:
+    if not verify_password(password, user['password']):
         return None
     return user 
 
