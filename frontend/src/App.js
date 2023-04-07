@@ -41,7 +41,8 @@ const containerStyle = { width: '100%', height: '100vh' };
 
 function App() {
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: secret["REACT_APP_GOOGLE_MAP_API"]
+    googleMapsApiKey: secret["REACT_APP_GOOGLE_MAP_API"],
+    libraries:["places"],
   }); 
 
   if (isLoaded) {
@@ -55,4 +56,49 @@ function App() {
   }
 }
 
+
+//The google.maps.Map() constructor is used to create the map object
+//Initialize the map and set the initial viewport bounds.
+
+const map = new google.maps.Map(document.querySelector('GoogleMap'), {
+  zoom: 10,
+  center: {lat: 38.89766, lng: -77.0365} // dc
+});
+
+
+//Add an event listener for the "idle" event, which fires when the map 
+//has finished loading and panning to a new location.
+
+google.maps.event.addListener(map,'idle', function() {
+  var bounds = map.getBounds(); // retrieves the bounds of the current viewport 
+  var ne = bounds.getNorthEast(); // .The bounds object contains the latitude and longitude
+  var sw = bounds.getSouthWest();
+
+// get the current viewport bounds and use them to fetch the posts that fall within 
+//that area using AJAX call to your server-side API to fetch the posts.
+  $.ajax({
+    url: '/api/posts',
+    type: 'GET',
+    data: {
+      'ne_lat': ne.lat(),
+      'ne_lng': ne.lng(),
+      'sw_lat': sw.lat(),
+      'sw_lng': sw.lng()
+    },
+    success: function(posts) {
+      //code to display the posts goes here
+      for (var i = 0; i < posts.length; i++) {
+        var post = posts[i];
+
+        var marker = new google.maps.Marker({
+          position: {lat: post.lat, lng: post.lng},
+          map: map,
+          title: post.title
+        });
+      }
+    }
+  });
+});
+
 export default App;
+
