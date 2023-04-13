@@ -1,0 +1,33 @@
+.bm-burger-button {
+    position: fixed;
+    width: 36px;
+    height: 25px;
+    right: 36px;
+    top: 36px;
+  }
+  
+  .bm-burger-bars {
+    background: darkolivegreen;
+  }
+  
+  .bm-menu {
+    background: #373a4789;
+    padding: 1em 1em 0;
+    font-size: 2em;
+    right: 36px;
+    top: 66px;
+    width: 250px;
+    text-align: left;
+  }
+  
+  .bm-menu .menu-item {
+    display: inline-block;
+    text-align: left;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  
+  .bm-overlay {
+    background: rgba(0, 0, 0, 0.3);
+  }
+  
